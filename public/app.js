@@ -1,297 +1,116 @@
-* {
-  box-sizing: border-box;
-}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Online TV</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">LIVE</p>
+          <h1>Online TV</h1>
+        </div>
 
-:root {
-  --bg: #0b1020;
-  --panel: #151d31;
-  --panel-alt: #1d2944;
-  --line: rgba(255, 255, 255, 0.09);
-  --soft-text: #c8d4f6;
-  --text: #f4f7ff;
-  --primary: #6ae0ff;
-  --primary-strong: #18b9ff;
-  --danger: #ff5a5f;
-  --shadow: rgba(0, 0, 0, 0.35);
-}
+        <div class="topbar-actions">
+          <button id="loginBtn" class="secondary">Admin login</button>
+          <button id="logoutBtn" class="ghost hidden">Logout</button>
+          <button id="toggleFullscreen" class="primary">Fullscreen</button>
+        </div>
+      </header>
 
-html, body {
-  margin: 0;
-  min-height: 100%;
-  font-family: Arial, Helvetica, sans-serif;
-  background: linear-gradient(135deg, #0d1324 0%, #1a223a 100%);
-  color: var(--text);
-}
+      <main class="layout">
+        <section class="player-panel">
+          <video id="videoPlayer" controls playsinline></video>
+          <div class="meta-row">
+            <div>
+              <span class="label">Now playing</span>
+              <strong id="currentChannel">Demo Live Stream</strong>
+            </div>
+            <div>
+              <span class="label">Status</span>
+              <strong id="playerStatus">Ready</strong>
+            </div>
+          </div>
+        </section>
 
-body {
-  min-height: 100vh;
-  padding: 24px;
-}
+        <aside class="sidebar">
+          <div class="panel">
+            <h2>Channels</h2>
+            <div id="channelList" class="channel-list"></div>
+          </div>
 
-button, input, textarea {
-  font: inherit;
-}
+          <div id="adminPanel" class="panel hidden">
+            <h2>Admin controls</h2>
 
-button {
-  cursor: pointer;
-}
+            <section class="admin-section">
+              <h3>Add stream</h3>
+              <form id="streamForm">
+                <label>
+                  <span>Channel name</span>
+                  <input type="text" id="name" placeholder="Sports TV" required />
+                </label>
 
-.hidden {
-  display: none !important;
-}
+                <label>
+                  <span>Category</span>
+                  <input type="text" id="category" placeholder="News" />
+                </label>
 
-.app-shell {
-  max-width: 1400px;
-  margin: 0 auto;
-}
+                <label>
+                  <span>Stream URL</span>
+                  <input type="url" id="url" placeholder="https://example.com/live.m3u8" required />
+                </label>
 
-.topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 24px;
-}
+                <button type="submit" class="primary">Save stream</button>
+              </form>
+            </section>
 
-.topbar-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
+            <section class="admin-section">
+              <h3>Import M3U playlist</h3>
+              <form id="m3uForm">
+                <label>
+                  <span>M3U URL</span>
+                  <input type="url" id="m3uUrl" placeholder="https://example.com/playlist.m3u" />
+                </label>
 
-.eyebrow {
-  margin: 0 0 6px;
-  color: var(--primary);
-  font-size: 0.8rem;
-  letter-spacing: 0.12em;
-  font-weight: 700;
-}
+                <label>
+                  <span>Paste M3U text</span>
+                  <textarea id="m3uText" rows="6" placeholder="#EXTM3U\n#EXTINF:-1,Channel 1\nhttps://example.com/channel1.m3u8"></textarea>
+                </label>
 
-h1, h2, h3, p {
-  margin: 0;
-}
+                <button type="submit" class="primary">Import playlist</button>
+              </form>
+            </section>
+          </div>
+        </aside>
+      </main>
+    </div>
 
-h1 {
-  font-size: clamp(2rem, 4vw, 3rem);
-}
+    <div id="loginModal" class="modal hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2>Admin login</h2>
+          <button id="closeLoginModal" class="close-btn" type="button">×</button>
+        </div>
 
-.layout {
-  display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(300px, 420px);
-  gap: 24px;
-}
+        <form id="loginForm">
+          <label>
+            <span>Username</span>
+            <input type="text" id="loginUsername" placeholder="admin" required />
+          </label>
 
-.player-panel,
-.panel,
-.modal-card {
-  background: rgba(21, 29, 49, 0.9);
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  box-shadow: 0 18px 45px var(--shadow);
-}
+          <label>
+            <span>Password</span>
+            <input type="password" id="loginPassword" placeholder="admin123" required />
+          </label>
 
-.player-panel {
-  padding: 18px;
-}
+          <button type="submit" class="primary">Login</button>
+        </form>
+      </div>
+    </div>
 
-video {
-  display: block;
-  width: 100%;
-  background: #000;
-  min-height: 460px;
-  border-radius: 12px;
-  aspect-ratio: 16 / 9;
-}
-
-.meta-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  padding-top: 16px;
-  color: var(--soft-text);
-}
-
-.label {
-  display: block;
-  font-size: 0.72rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  margin-bottom: 6px;
-  color: var(--soft-text);
-}
-
-.sidebar {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.panel {
-  padding: 18px;
-}
-
-.channel-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 16px;
-}
-
-.channel-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  background: var(--panel-alt);
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 12px 14px;
-  cursor: pointer;
-  transition: border-color 0.2s ease, transform 0.2s ease;
-}
-
-.channel-item:hover {
-  border-color: rgba(106, 224, 255, 0.7);
-  transform: translateY(-1px);
-}
-
-.channel-item.active {
-  border-color: var(--primary);
-  background: rgba(24, 185, 255, 0.12);
-}
-
-.channel-meta {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.channel-name {
-  font-weight: 700;
-}
-
-.channel-category {
-  font-size: 0.82rem;
-  color: var(--soft-text);
-}
-
-.delete-btn {
-  background: rgba(255, 90, 95, 0.15);
-  border: 1px solid rgba(255, 90, 95, 0.4);
-  color: #ffdfe0;
-  border-radius: 8px;
-  padding: 7px 10px;
-  cursor: pointer;
-}
-
-.admin-section {
-  margin-top: 18px;
-}
-
-.admin-section h3 {
-  margin-bottom: 12px;
-  color: var(--primary);
-}
-
-form {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-label {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  color: var(--soft-text);
-  font-size: 0.9rem;
-}
-
-input,
-textarea {
-  width: 100%;
-  background: #0b1222;
-  color: var(--text);
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 12px 14px;
-  resize: vertical;
-}
-
-textarea {
-  min-height: 120px;
-}
-
-button.primary,
-button.secondary,
-button.ghost {
-  border: none;
-  border-radius: 10px;
-  padding: 12px 18px;
-  font-weight: 700;
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-
-button.primary {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-strong) 100%);
-  color: #031b2b;
-}
-
-button.secondary {
-  background: rgba(106, 224, 255, 0.15);
-  border: 1px solid rgba(106, 224, 255, 0.4);
-  color: var(--text);
-}
-
-button.ghost {
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--text);
-  border: 1px solid var(--line);
-}
-
-button:hover {
-  opacity: 0.96;
-  transform: translateY(-1px);
-}
-
-.modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(3, 8, 17, 0.75);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-
-.modal-card {
-  width: min(420px, 100%);
-  padding: 20px;
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
-.close-btn {
-  background: transparent;
-  border: none;
-  color: var(--text);
-  font-size: 1.7rem;
-  line-height: 1;
-  cursor: pointer;
-}
-
-@media (max-width: 980px) {
-  .layout {
-    grid-template-columns: 1fr;
-  }
-
-  video {
-    min-height: 280px;
-  }
-}
+    <script src="/app.js"></script>
+  </body>
+</html>

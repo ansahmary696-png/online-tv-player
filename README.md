@@ -1,298 +1,297 @@
-const videoPlayer = document.getElementById('videoPlayer');
-const currentChannel = document.getElementById('currentChannel');
-const playerStatus = document.getElementById('playerStatus');
-const channelList = document.getElementById('channelList');
-const streamForm = document.getElementById('streamForm');
-const m3uForm = document.getElementById('m3uForm');
-const adminPanel = document.getElementById('adminPanel');
-const loginBtn = document.getElementById('loginBtn');
-const logoutBtn = document.getElementById('logoutBtn');
-const loginModal = document.getElementById('loginModal');
-const closeLoginModal = document.getElementById('closeLoginModal');
-const loginForm = document.getElementById('loginForm');
-const fullscreenButton = document.getElementById('toggleFullscreen');
-
-const state = {
-  streams: [],
-  activeStreamId: null,
-  token: localStorage.getItem('tv_token') || ''
-};
-
-function renderAuth(isLoggedIn) {
-  adminPanel.classList.toggle('hidden', !isLoggedIn);
-  loginBtn.classList.toggle('hidden', isLoggedIn);
-  logoutBtn.classList.toggle('hidden', !isLoggedIn);
+* {
+  box-sizing: border-box;
 }
 
-async function apiFetch(url, options = {}) {
-  const headers = { ...(options.headers || {}) };
-
-  if (state.token) {
-    headers.Authorization = `Bearer ${state.token}`;
-  }
-
-  const response = await fetch(url, { ...options, headers });
-
-  if (response.status === 401) {
-    state.token = '';
-    localStorage.removeItem('tv_token');
-    renderAuth(false);
-    throw new Error('Authentication required.');
-  }
-
-  return response;
+:root {
+  --bg: #0b1020;
+  --panel: #151d31;
+  --panel-alt: #1d2944;
+  --line: rgba(255, 255, 255, 0.09);
+  --soft-text: #c8d4f6;
+  --text: #f4f7ff;
+  --primary: #6ae0ff;
+  --primary-strong: #18b9ff;
+  --danger: #ff5a5f;
+  --shadow: rgba(0, 0, 0, 0.35);
 }
 
-async function fetchStreams() {
-  const response = await fetch('/api/streams');
-
-  if (!response.ok) {
-    throw new Error('Unable to fetch streams');
-  }
-
-  state.streams = await response.json();
-  renderChannels();
-
-  if (state.streams.length && !state.activeStreamId) {
-    loadStream(state.streams[0]);
-  }
+html, body {
+  margin: 0;
+  min-height: 100%;
+  font-family: Arial, Helvetica, sans-serif;
+  background: linear-gradient(135deg, #0d1324 0%, #1a223a 100%);
+  color: var(--text);
 }
 
-function renderChannels() {
-  channelList.innerHTML = '';
-
-  state.streams.forEach((stream) => {
-    const item = document.createElement('div');
-    item.className = 'channel-item' + (stream.id === state.activeStreamId ? ' active' : '');
-
-    const meta = document.createElement('div');
-    meta.className = 'channel-meta';
-    meta.innerHTML = `
-      <span class="channel-name">${stream.name}</span>
-      <span class="channel-category">${stream.category || 'General'}</span>
-    `;
-
-    const deleteBtn = document.createElement('button');
-    deleteBtn.className = 'delete-btn';
-    deleteBtn.type = 'button';
-    deleteBtn.textContent = 'Remove';
-    deleteBtn.style.display = state.token ? 'inline-flex' : 'none';
-    deleteBtn.addEventListener('click', async (event) => {
-      event.stopPropagation();
-      await deleteStream(stream.id);
-    });
-
-    item.addEventListener('click', () => loadStream(stream));
-    item.append(meta, deleteBtn);
-    channelList.appendChild(item);
-  });
+body {
+  min-height: 100vh;
+  padding: 24px;
 }
 
-function loadStream(stream) {
-  state.activeStreamId = stream.id;
-  currentChannel.textContent = stream.name;
-  playerStatus.textContent = 'Loading...';
-  videoPlayer.src = stream.url;
-  videoPlayer.load();
-  videoPlayer.play().catch(() => {
-    playerStatus.textContent = 'Stream ready';
-  });
-  renderChannels();
+button, input, textarea {
+  font: inherit;
 }
 
-async function deleteStream(id) {
-  const response = await apiFetch(`/api/streams/${id}`, { method: 'DELETE' });
-
-  if (!response.ok) {
-    const err = await response.json().catch(() => ({}));
-    alert(err.message || 'Unable to remove stream.');
-    return;
-  }
-
-  state.streams = state.streams.filter((stream) => stream.id !== id);
-
-  if (state.activeStreamId === id) {
-    state.activeStreamId = state.streams[0]?.id || null;
-    if (state.streams[0]) {
-      loadStream(state.streams[0]);
-    } else {
-      currentChannel.textContent = 'No active stream';
-      playerStatus.textContent = 'No stream selected';
-      videoPlayer.removeAttribute('src');
-      videoPlayer.load();
-    }
-  }
-
-  renderChannels();
+button {
+  cursor: pointer;
 }
 
-async function loginUser(username, password) {
-  const response = await fetch('/api/login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password })
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.message || 'Unable to sign in.');
-  }
-
-  state.token = data.token;
-  localStorage.setItem('tv_token', data.token);
-  renderAuth(true);
-  loginModal.classList.add('hidden');
-  loginForm.reset();
+.hidden {
+  display: none !important;
 }
 
-async function logoutUser() {
-  if (state.token) {
-    await fetch('/api/logout', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${state.token}`
-      }
-    }).catch(() => {});
-  }
-
-  state.token = '';
-  localStorage.removeItem('tv_token');
-  renderAuth(false);
+.app-shell {
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
-streamForm.addEventListener('submit', async (event) => {
-  event.preventDefault();
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
 
-  if (!state.token) {
-    loginModal.classList.remove('hidden');
-    return;
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  color: var(--primary);
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  font-weight: 700;
+}
+
+h1, h2, h3, p {
+  margin: 0;
+}
+
+h1 {
+  font-size: clamp(2rem, 4vw, 3rem);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(300px, 420px);
+  gap: 24px;
+}
+
+.player-panel,
+.panel,
+.modal-card {
+  background: rgba(21, 29, 49, 0.9);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 18px 45px var(--shadow);
+}
+
+.player-panel {
+  padding: 18px;
+}
+
+video {
+  display: block;
+  width: 100%;
+  background: #000;
+  min-height: 460px;
+  border-radius: 12px;
+  aspect-ratio: 16 / 9;
+}
+
+.meta-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 16px;
+  color: var(--soft-text);
+}
+
+.label {
+  display: block;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  color: var(--soft-text);
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.panel {
+  padding: 18px;
+}
+
+.channel-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.channel-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  background: var(--panel-alt);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.channel-item:hover {
+  border-color: rgba(106, 224, 255, 0.7);
+  transform: translateY(-1px);
+}
+
+.channel-item.active {
+  border-color: var(--primary);
+  background: rgba(24, 185, 255, 0.12);
+}
+
+.channel-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.channel-name {
+  font-weight: 700;
+}
+
+.channel-category {
+  font-size: 0.82rem;
+  color: var(--soft-text);
+}
+
+.delete-btn {
+  background: rgba(255, 90, 95, 0.15);
+  border: 1px solid rgba(255, 90, 95, 0.4);
+  color: #ffdfe0;
+  border-radius: 8px;
+  padding: 7px 10px;
+  cursor: pointer;
+}
+
+.admin-section {
+  margin-top: 18px;
+}
+
+.admin-section h3 {
+  margin-bottom: 12px;
+  color: var(--primary);
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--soft-text);
+  font-size: 0.9rem;
+}
+
+input,
+textarea {
+  width: 100%;
+  background: #0b1222;
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 14px;
+  resize: vertical;
+}
+
+textarea {
+  min-height: 120px;
+}
+
+button.primary,
+button.secondary,
+button.ghost {
+  border: none;
+  border-radius: 10px;
+  padding: 12px 18px;
+  font-weight: 700;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+button.primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-strong) 100%);
+  color: #031b2b;
+}
+
+button.secondary {
+  background: rgba(106, 224, 255, 0.15);
+  border: 1px solid rgba(106, 224, 255, 0.4);
+  color: var(--text);
+}
+
+button.ghost {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  border: 1px solid var(--line);
+}
+
+button:hover {
+  opacity: 0.96;
+  transform: translateY(-1px);
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 8, 17, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-card {
+  width: min(420px, 100%);
+  padding: 20px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-size: 1.7rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+@media (max-width: 980px) {
+  .layout {
+    grid-template-columns: 1fr;
   }
 
-  const payload = {
-    name: document.getElementById('name').value,
-    category: document.getElementById('category').value || 'General',
-    url: document.getElementById('url').value
-  };
-
-  const response = await apiFetch('/api/streams', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    alert(data.message || 'Unable to save stream.');
-    return;
+  video {
+    min-height: 280px;
   }
-
-  state.streams.push(data);
-  streamForm.reset();
-  renderChannels();
-  loadStream(data);
-});
-
-m3uForm.addEventListener('submit', async (event) => {
-  event.preventDefault();
-
-  if (!state.token) {
-    loginModal.classList.remove('hidden');
-    return;
-  }
-
-  const m3uText = document.getElementById('m3uText').value.trim();
-  const m3uUrl = document.getElementById('m3uUrl').value.trim();
-
-  const response = await apiFetch('/api/import-m3u', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ content: m3uText || undefined, url: m3uUrl || undefined })
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    alert(data.message || 'Unable to import playlist.');
-    return;
-  }
-
-  if (data.imported && data.imported.length) {
-    state.streams = [...state.streams, ...data.imported];
-    m3uForm.reset();
-    renderChannels();
-    loadStream(data.imported[0]);
-    alert(`Imported ${data.imported.length} streams.`);
-  } else {
-    alert('No tracks were imported.');
-  }
-});
-
-loginBtn.addEventListener('click', () => {
-  loginModal.classList.remove('hidden');
-});
-
-closeLoginModal.addEventListener('click', () => {
-  loginModal.classList.add('hidden');
-});
-
-loginForm.addEventListener('submit', async (event) => {
-  event.preventDefault();
-
-  const username = document.getElementById('loginUsername').value.trim();
-  const password = document.getElementById('loginPassword').value;
-
-  try {
-    await loginUser(username, password);
-  } catch (error) {
-    alert(error.message || 'Login failed.');
-  }
-});
-
-logoutBtn.addEventListener('click', async () => {
-  await logoutUser();
-  renderChannels();
-});
-
-videoPlayer.addEventListener('play', () => {
-  playerStatus.textContent = 'Playing';
-});
-
-videoPlayer.addEventListener('pause', () => {
-  playerStatus.textContent = 'Paused';
-});
-
-videoPlayer.addEventListener('error', () => {
-  playerStatus.textContent = 'Stream unavailable';
-});
-
-fullscreenButton.addEventListener('click', () => {
-  if (!document.fullscreenElement) {
-    document.documentElement.requestFullscreen?.();
-  } else {
-    document.exitFullscreen?.();
-  }
-});
-
-loginModal.addEventListener('click', (event) => {
-  if (event.target === loginModal) {
-    loginModal.classList.add('hidden');
-  }
-});
-
-renderAuth(Boolean(state.token));
-fetchStreams().catch((error) => {
-  console.error(error);
-  playerStatus.textContent = 'Failed to load streams';
-});
-
-if (state.token) {
-  fetch('/api/session', {
-    headers: { Authorization: `Bearer ${state.token}` }
-  }).then((response) => response.json()).then((data) => {
-    if (!data.loggedIn) {
-      logoutUser();
-    }
-  }).catch(() => logoutUser());
 }

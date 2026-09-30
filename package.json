@@ -1,22 +1,30 @@
 {
   "name": "online-tv-player",
-  "version": "1.0.0",
-  "description": "A lightweight online TV streaming app with a simple stream management panel.",
+  "version": "2.0.0",
+  "description": "Production-ready online TV streaming platform with admin controls and playlist import.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "seed": "node scripts/seed.js"
   },
   "keywords": [
     "tv",
     "streaming",
     "hls",
     "video",
-    "web-app"
+    "web-app",
+    "production"
   ],
   "author": "Copilot",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.19.2"
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2",
+    "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "sqlite3": "^5.1.7"
   }
 }
