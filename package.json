@@ -1,0 +1,22 @@
+{
+  "name": "online-tv-player",
+  "version": "1.0.0",
+  "description": "A lightweight online TV streaming app with a simple stream management panel.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "tv",
+    "streaming",
+    "hls",
+    "video",
+    "web-app"
+  ],
+  "author": "Copilot",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

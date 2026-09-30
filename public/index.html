@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Online TV</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">LIVE</p>
+          <h1>Online TV</h1>
+        </div>
+        <button class="primary" id="toggleFullscreen">Fullscreen</button>
+      </header>
+
+      <main class="layout">
+        <section class="player-panel">
+          <video id="videoPlayer" controls playsinline></video>
+          <div class="meta-row">
+            <div>
+              <span class="label">Now playing</span>
+              <strong id="currentChannel">Demo Live Stream</strong>
+            </div>
+            <div>
+              <span class="label">Status</span>
+              <strong id="playerStatus">Ready</strong>
+            </div>
+          </div>
+        </section>
+
+        <aside class="sidebar">
+          <div class="panel">
+            <h2>Channels</h2>
+            <div id="channelList" class="channel-list"></div>
+          </div>
+
+          <div class="panel form-panel">
+            <h2>Add stream</h2>
+            <form id="streamForm">
+              <label>
+                <span>Channel name</span>
+                <input type="text" id="name" placeholder="Sports TV" required />
+              </label>
+
+              <label>
+                <span>Category</span>
+                <input type="text" id="category" placeholder="News" />
+              </label>
+
+              <label>
+                <span>Stream URL</span>
+                <input type="url" id="url" placeholder="https://example.com/live.m3u8" required />
+              </label>
+
+              <button type="submit" class="primary">Save stream</button>
+            </form>
+          </div>
+        </aside>
+      </main>
+    </div>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
